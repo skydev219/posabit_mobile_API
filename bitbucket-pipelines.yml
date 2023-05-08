@@ -1,0 +1,99 @@
+image: node:14
+
+pipelines:
+  custom:
+    release:
+      - step:
+            name: Build, Test and Deploying Version to Production environment
+            deployment: Production
+            caches:
+              - node
+            script:
+              - npm install
+              - npm run build
+              - npm test
+              - echo "MONGODB_URI='$MONGODB_URI'" > .env
+              - apt update && apt install zip
+              - zip -r mobile-api_$BITBUCKET_BUILD_NUMBER.zip .
+              - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
+                variables:
+                  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                  AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                  APPLICATION_NAME: $APPLICATION_NAME
+                  ENVIRONMENT_NAME: $ENVIRONMENT_NAME
+                  ZIP_FILE: 'mobile-api_$BITBUCKET_BUILD_NUMBER.zip'
+                  S3_BUCKET: $S3_BUCKET
+            artifacts: 
+              - 'mobile-api_$BITBUCKET_BUILD_NUMBER.zip'
+
+
+    staging:
+      - step:
+            name: Build, Test and Deploying Version to Staging environment
+            deployment: Staging
+            caches:
+              - node
+            script:
+              - npm install
+              - npm run build
+              - npm test
+              - echo "MONGODB_URI='$MONGODB_URI'" > .env
+              - apt update && apt install zip
+              - zip -r mobile-api_$BITBUCKET_BUILD_NUMBER.zip .
+              - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
+                variables:
+                  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                  AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                  APPLICATION_NAME: $APPLICATION_NAME
+                  ENVIRONMENT_NAME: $ENVIRONMENT_NAME
+                  ZIP_FILE: 'mobile-api_$BITBUCKET_BUILD_NUMBER.zip'
+                  S3_BUCKET: $S3_BUCKET
+            artifacts: 
+              - 'mobile-api_$BITBUCKET_BUILD_NUMBER.zip'
+  branches:
+    developer:
+      - step:
+            name: Build, Test and Deploying Version to Development environment
+            deployment: Test
+            caches:
+              - node
+            script:
+              - echo "MONGODB_URI='$MONGODB_URI'" > .env
+              - npm install
+              - npm run build
+              - npm test || echo 'tests failed!'
+              - apt update && apt install zip
+              - zip -r mobile-api_$BITBUCKET_BUILD_NUMBER.zip .
+              - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
+                variables:
+                  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                  AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                  APPLICATION_NAME: $APPLICATION_NAME
+                  ENVIRONMENT_NAME: $ENVIRONMENT_NAME
+                  ZIP_FILE: 'mobile-api_$BITBUCKET_BUILD_NUMBER.zip'
+                  S3_BUCKET: $S3_BUCKET
+            artifacts: 
+              - 'mobile-api_$BITBUCKET_BUILD_NUMBER.zip'
+    release:
+      - step:
+            name: Build and Test
+            deployment: Production
+            caches:
+              - node
+            script:
+              - npm install
+              - npm run build
+              - npm test
+    staging:
+      - step:
+            name: Build and Test
+            deployment: Staging
+            caches:
+              - node
+            script:
+              - npm install
+              - npm run build
+              - npm test

@@ -1,0 +1,594 @@
+openapi: 3.0.0
+info:
+  version: v1.0
+  title: catalog
+  contact:
+    email: jeshurun@eliteapps.io
+    name: Jeshurun
+servers:
+  - url: bhulhdmb41.execute-api.us-west-2.amazonaws.com/dev
+    description: Live
+  - url: 'http://localhost:3000/api'
+    description: Localhost
+paths:
+  /company:
+    get:
+      security:
+        - CompanyAuth: []
+      responses:
+        '200':
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Company'
+  '/menu/{store_id}/brand':
+    get:
+      tags:
+        - menu
+      parameters:
+        - name: store_id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - CompanyAuth: []
+      responses:
+        '200':
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Brand'
+  '/menu/{store_id}/brand/{brand_id}':
+    get:
+      tags:
+        - menu
+      parameters:
+        - name: store_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: brand_id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - CompanyAuth: []
+      responses:
+        '200':
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Brand'
+        '404':
+          description: Brand ID not found
+  '/menu/{store_id}':
+    get:
+      tags:
+        - menu
+      parameters:
+        - name: store_id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - CompanyAuth: []
+      responses:
+        '200':
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Menu'
+  '/menu/{store_id}/search':
+    get:
+      tags:
+        - products
+      parameters:
+        - name: store_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: query
+          description: Search query for filtering products
+          schema:
+            type: string
+        - name: category_id
+          in: query
+          description: 'Get products from this category, use commas to query for multiple categories'
+          schema:
+            type: string
+        - name: effect_id
+          in: query
+          description: 'Get products with this particular effect, use commas to query for multiple effects'
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: the maximum number of results to return. defaults to 25
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: 'the offset of results, used for paging. defaults to 0'
+          schema:
+            type: integer
+            minimum: 0
+        - name: sort
+          in: query
+          description: sort the results (defaults to popular)
+          schema:
+            type: string
+            enum:
+              - popular
+              - price_low
+              - price_high
+              - thc_low
+              - thc_high
+      security:
+        - CompanyAuth: []
+      responses:
+        '200':
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+  '/menu/{store_id}/product':
+    get:
+      description: get the details of a product
+      tags:
+        - products
+      parameters:
+        - name: store_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: get a product by it's ID.
+          schema:
+            type: string
+        - name: sku
+          in: query
+          description: get a product by it's SKU
+          schema:
+            type: string
+      security:
+        - CompanyAuth: []
+      responses:
+        '200':
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '404':
+          description: product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    Menu:
+      type: object
+      properties:
+        effects:
+          type: array
+          description: a list of effects available on the menu for querying products
+          items:
+            $ref: '#/components/schemas/Effect'
+        categories:
+          type: array
+          description: a list of categories available on the menu for querying products
+          items:
+            $ref: '#/components/schemas/Category'
+        weights:
+          type: array
+          description: a list of weights available on the menu for querying products
+          items:
+            $ref: '#/components/schemas/Weight'
+    Weight:
+      type: object
+      properties:
+        id:
+          type: string
+          description: the ID of the weight to use in a menu query
+          example: half-ounce
+        name:
+          type: string
+          description: the human readable format of the weight
+          example: 1/2 oz
+        grams:
+          type: number
+          description: the number of grams in the weight (useful for sorting)
+          example: 14.1748
+    Category:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: the ID of the category for querying
+          example: flower
+        name:
+          type: string
+          description: The human readable name of the category
+          example: Flower
+        image:
+          type: string
+          format: uri
+          description: The URL to the image for the category
+          example: 'https://static.weedapps.io/img/category/flower.jpg'
+        subcategories:
+          format: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: the ID of the subcategory
+                example: flower/top-shelf
+              name:
+                type: string
+                description: the name of the subcategory
+                example: Top Shelf
+    Brand:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: the ID of the brand
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          description: the name of the brand
+          example: Damn Good Bud
+        logo_url:
+          type: string
+          format: uri
+          description: The URL to the brand image
+          example: 'https://static.weedapps.io/img/brands/507f1f77bcf86cd799439011/logo.png'
+    Strain:
+      type: object
+      properties:
+        name:
+          type: string
+          description: the name of the strain
+          example: Purple Pineapple Express
+        strain_type:
+          type: string
+          description: the type of the strain
+          example: indica
+          enum:
+            - indica
+            - sativa
+            - hybrid
+            - cbd
+            - sativa_hybrid
+            - indica_hybrid
+    Effect:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          example: uplifting
+          description: the ID of the effect used for querying products
+        name:
+          type: string
+          example: Uplifting
+          description: the name of the effect to display to users
+    Product:
+      type: object
+      required:
+        - id
+        - store_id
+        - name
+        - thumbnail
+        - images
+        - description
+        - options
+        - is_active
+      properties:
+        id:
+          type: string
+          description: 'the ID of the product in the database, used for referencing the product'
+          example: 507f1f77bcf86cd799439011
+        store_id:
+          type: string
+          description: the ID of the store that the product belongs to
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          description: the name of the product
+          example: Purple Pineapple Express
+        brand:
+          $ref: '#/components/schemas/Brand'
+        vendor:
+          type: string
+          description: the name of the vendor
+          example: Damn Good Bud
+        sku:
+          type: string
+          description: 'the product SKU, used to identify the same product in a different store'
+          example: WA15367
+        category:
+          type: object
+          required:
+            - id
+            - name
+          properties:
+            id:
+              type: string
+              description: the ID of the category that the product belongs to
+              example: flower
+            name:
+              type: string
+              description: the name of the category that the product belongs to
+              example: Flower
+            subcategory:
+              type: object
+              description: 'the subcategory of the product, if it exists.'
+              required:
+                - id
+                - name
+              properties:
+                id:
+                  type: string
+                  description: the ID of the subcategory
+                  example: flower/top_shelf
+                name:
+                  type: string
+                  description: the name of the subcategory
+                  example: Top Shelf
+        strain:
+          $ref: '#/components/schemas/Strain'
+        potency:
+          $ref: '#/components/schemas/Potency'
+        effects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Effect'
+        description:
+          type: string
+        thumbnail:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        status:
+          type: string
+          enum:
+            - draft
+            - archive
+            - active
+          example: active
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductOption'
+    ProductOption:
+      type: object
+      required:
+        - id
+        - name
+        - price
+        - in_stock
+        - is_active
+      properties:
+        id:
+          type: string
+          description: 'the ID of the product option, note this ID is only identifiable in the context of the product. Without the associated product ID, this ID is useless.'
+          example: option-1
+        name:
+          type: string
+          description: 'the name of the option, does not contain the name of the product'
+          example: 1/2 oz
+        weight:
+          $ref: '#/components/schemas/Weight'
+        price:
+          type: integer
+          description: the price of the item in cents
+          example: 5800
+        sale_price:
+          type: integer
+          description: 'the sale price of the item in cents, if on sale'
+          example: 4900
+        image:
+          type: string
+          format: uri
+          description: 'the URL to the image for this option, if it has a different image'
+        in_stock:
+          type: boolean
+          description: flag for whether the the option is in stock or not
+          example: true
+        is_active:
+          type: boolean
+          description: 'flag for whether the option is available to the user or not. if this field is null or undefined, assume that it is true.'
+          example: true
+    Company:
+      type: object
+      required:
+        - _id
+      properties:
+        _id:
+          type: string
+          description: the ID of the company
+        name:
+          type: string
+          description: the name of the company
+          example: WeedApps Dispensary
+        stores:
+          type: array
+          description: A list of stores that the comany has.
+          items:
+            $ref: '#/components/schemas/Store'
+    Potency:
+      type: object
+      properties:
+        thc:
+          type: number
+          example: 0.2152
+          description: the percentage tested for THC
+        thca:
+          type: number
+          example: 0.0352
+          description: the percentage tested for THCA
+        cbd:
+          type: number
+          example: 0.0021
+          description: the percentage tested for CBD
+        cbda:
+          type: number
+          example: 0
+          description: the percentage tested for CBDA
+    Store:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        website_url:
+          type: string
+          format: uri
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        hours:
+          $ref: '#/components/schemas/WeekHours'
+        address:
+          $ref: '#/components/schemas/Address'
+    WeekHours:
+      type: object
+      properties:
+        monday:
+          $ref: '#/components/schemas/DayHours'
+        tuesday:
+          $ref: '#/components/schemas/DayHours'
+        wednesday:
+          $ref: '#/components/schemas/DayHours'
+        thursday:
+          $ref: '#/components/schemas/DayHours'
+        friday:
+          $ref: '#/components/schemas/DayHours'
+        saturday:
+          $ref: '#/components/schemas/DayHours'
+        sunday:
+          $ref: '#/components/schemas/DayHours'
+    DayHours:
+      type: object
+      description: 'the time range that the store is open for the day. All time is denoted as minutes after the start of the day (12:00am) For example, 8:00am would be 480. If a store is open until 1am the next morning, the closing time would be 1500'
+      properties:
+        open_at:
+          type: number
+          description: the time of day that the store opens
+          example: 480
+        closes_at:
+          type: number
+          description: the time of day that the store closes
+          example: 660
+      required:
+        - closes_at
+    Address:
+      type: object
+      required:
+        - lat
+        - lng
+        - city
+        - country
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        city:
+          type: string
+          example: New York
+        country:
+          type: string
+          example: USA
+        state:
+          type: string
+        zipcode:
+          type: string
+        street:
+          type: string
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - invalid-request
+            message:
+              type: string
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    CompanyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+    AdminAuth:
+      type: apiKey
+      in: header
+      name: Admin-Authorization
+security:
+  - BasicAuth: []

@@ -1,0 +1,37 @@
+{
+	"info": {
+		"_postman_id": "57c26ec4-2621-457a-8a4e-6409aa99a49e",
+		"name": "WeedApps",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Company Info",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "API-KEY-0000-0000",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:3000/api/companies/theHeirloomCollective",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"companies",
+						"theHeirloomCollective"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

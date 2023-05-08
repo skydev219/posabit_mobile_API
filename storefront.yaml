@@ -1,0 +1,228 @@
+openapi: 3.1.0
+info:
+  title: storefront
+  version: '1.0'
+  description: ''
+servers:
+  - url: 'https://bhulhdmb41.execute-api.us-west-2.amazonaws.com/dev'
+    description: Live
+paths:
+  /storefront:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Storefront'
+      operationId: get-storefront
+      security:
+        - API Key: []
+components:
+  schemas:
+    Storefront:
+      title: Storefront
+      type: object
+      properties:
+        title:
+          type: string
+          deprecated: true
+          description: The title to show on the top of the page
+        subtitle:
+          type: string
+          deprecated: true
+        header:
+          type: object
+          properties:
+            title:
+              type: string
+            subtitle:
+              type: string
+            logo_url:
+              type: string
+              format: uri
+              readOnly: true
+            logo_position:
+              type: string
+              enum:
+                - center
+                - leading
+              example: center
+              readOnly: true
+            leading_buttons:
+              type: array
+              items:
+                type: string
+            trailing_buttons:
+              type: array
+              items:
+                type: string
+          required:
+            - title
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnySection'
+      required:
+        - sections
+      examples:
+        - title: string
+          subtitle: string
+          header:
+            title: string
+            subtitle: string
+            logo_url: 'http://example.com'
+            logo_position: center
+            leading_buttons:
+              - string
+            trailing_buttons:
+              - string
+          sections:
+            - _sectionID: string
+              title: Welcome to your new app
+              subtitle: Your app is completely customizable. Keep your users up to date with push notifications!
+              color: '#666666'
+        - title: string
+          subtitle: string
+          header:
+            title: string
+            subtitle: string
+            logo_url: 'http://example.com'
+            logo_position: center
+            leading_buttons:
+              - string
+            trailing_buttons:
+              - string
+          sections:
+            - _sectionID: string
+              title: Welcome to your new app
+              subtitle: Your app is completely customizable. Keep your users up to date with push notifications!
+              color: '#666666'
+    AnySection:
+      title: AnySection
+      allOf:
+        - type: object
+          properties:
+            _sectionID:
+              type: string
+          required:
+            - _sectionID
+        - oneOf:
+            - $ref: '#/components/schemas/BannerSection'
+            - $ref: '#/components/schemas/CategoriesSection'
+            - $ref: '#/components/schemas/ImageSection'
+            - $ref: '#/components/schemas/ProductsSection'
+    BannerSection:
+      title: BannerSection
+      type: object
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        image:
+          type: string
+        color:
+          $ref: '#/components/schemas/Color'
+      required:
+        - title
+      examples:
+        - title: Welcome to your new app
+          subtitle: Your app is completely customizable. Keep your users up to date with push notifications!
+          color: '#666666'
+      description: |-
+        The banner section shows users a banner with a title, subtitle, and optional background image or color. 
+
+        The Section ID is `banner`
+
+        ![Banner Section Image](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/859d7070-744b-427f-8315-dc1750e76821/IMG_0242.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220115%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220115T061409Z&X-Amz-Expires=86400&X-Amz-Signature=dd24555bbef2f4c035c46092db3978995602427ac8599af0867edcd5b2bb4dc8&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22IMG_0242.jpg%22&x-id=GetObject)
+    CategoriesSection:
+      title: CategoriesSection
+      type: object
+      properties:
+        categories:
+          type:
+            - string
+            - array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+              image:
+                type: string
+                format: uri
+            required:
+              - id
+              - title
+              - image
+        title:
+          type: string
+      required:
+        - categories
+        - title
+      description: |
+        The Categories section shows users a list of categories to select from.
+
+        The section ID is `categories`
+
+        ![Categories Preview](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/7dda3a02-5887-421a-834e-d56ac8eaeb58/Screen_Shot_2021-11-22_at_2.13.22_PM.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220115%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220115T061224Z&X-Amz-Expires=86400&X-Amz-Signature=0e82d40547ef34f1f831192f0296e1687bc8520f9364b3c21498a7bc141ed9af&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Screen%2520Shot%25202021-11-22%2520at%25202.13.22%2520PM.png%22&x-id=GetObject)
+    ImageSection:
+      title: ImageSection
+      type: object
+      properties:
+        image:
+          type: string
+          format: uri
+        title:
+          type: string
+        subtitle:
+          type: string
+        destination:
+          type: string
+          format: uri
+      required:
+        - image
+      description: |-
+        Displays an image to the user, with optional text overlay
+
+        Section ID is `image`
+
+        ![image section preview](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/ada9bfbf-3d7e-4f75-a44c-34f7ed6fa90d/Screen_Shot_2021-11-22_at_2.11.32_PM.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220115%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220115T061637Z&X-Amz-Expires=86400&X-Amz-Signature=2d97bb934809c2888f763e54f4fb15cab0c6a57619dcefdf54493a7ded78f6e2&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Screen%2520Shot%25202021-11-22%2520at%25202.11.32%2520PM.png%22&x-id=GetObject)
+    ProductsSection:
+      title: ProductsSection
+      type: object
+      properties:
+        title:
+          type: string
+        products:
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - products
+      description: |-
+        Shows a carousel of products to the user with a specific title
+
+        Section ID: `products`
+
+        ![product section](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/2ef5d5a9-c074-47ff-8739-eb7a8e7c3c34/Screen_Shot_2021-11-22_at_2.18.02_PM.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220115%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220115T061841Z&X-Amz-Expires=86400&X-Amz-Signature=a3f13781133e437982695d5409eb70ad5b8f9f60ea9a0c0a94b326cfa907ba7e&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Screen%2520Shot%25202021-11-22%2520at%25202.18.02%2520PM.png%22&x-id=GetObject)
+    Color:
+      type: string
+      title: Color
+      pattern: '^#(?:[0-9a-fA-F]{3}){1,2}$'
+      example: '#FFFFFF'
+  securitySchemes:
+    API Key:
+      name: Authorization
+      type: apiKey
+      in: header
